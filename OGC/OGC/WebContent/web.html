@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <link rel="stylesheet" href="css/datepicker.css">
+    <style type="text/css">
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            margin: 0;
+        }
+
+        #allmap {
+            margin-left: 9%;
+            margin-right: 0px;
+            width: 28%;
+            height: 55%;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        * {
+            font-family: 'Microsoft Yahei';
+        }
+
+        .p20 {
+            margin-left: 9%;
+        }
+
+        .mt40 {
+            margin-top: 9%;
+        }
+
+        .hide {
+            display: none;
+        }
+
+        #size {
+            width: 5.5%;
+            height: 4%;
+            margin-top: 0.1%;
+            margin-left: 24.8%;
+            z-index: 1;
+        }
+
+        #span_name {
+            width: 20%;
+            z-index: 1;
+        }
+
+        #input_url {
+            position: absolute;
+            left: 48%;
+            width: 45%;
+            height: 4%;
+            top: 22.6%;
+            z-index: 1;
+        }
+
+        #url {
+            width: 70%;
+            z-index: 1;
+        }
+
+        #define {
+            width: 15%;
+             height: 100%;
+            margin-left: 5%;
+            z-index: 1;
+        }
+
+        #Answer {
+        	background:WHITE;
+            position: absolute;
+            left: 48%;
+            top: 40%;
+            border: 0;
+            z-index: 1;
+        }
+
+        #background {
+            position: absolute;
+            top: 14.6%;
+            z-index: -1;
+        }
+
+        #back_picture {
+            width: 100%;
+            height: 100%;
+        }
+
+        #name {
+            position: absolute;
+            top: 0.6%;
+            left: 4.5%;
+            height: 13.3%;
+            z-index: 1;
+        }
+
+        #txt {
+            height: 4.6%;
+            color: white;
+        }
+        #word{
+        	font-size:70%;
+        	font-style:oblique;
+        }
+    </style>
+    <script type="text/javascript" src="js/jquery-3.3.1.min.js"></script>
+    <script>
+        function send_message1() {
+            var value1 = document.getElementById("start").value;
+            var value2 = document.getElementById("end").value;
+            var value3 = result;
+            var value4 = value1 + ' ' + value2 + ' ' + value3;
+            $.ajax({
+                url: "ajaxServlet",
+                type: "POST",
+                data: {
+                    "value": value4,
+                },
+                success: function (data) {
+                    	var table="<table border='1' bordercolor='blue' >";
+                    	table+="<tr>"+"<th>"+"相似度"+"</th>"+"<th>"+"URL"+"</th>"+"</tr>"
+                    	  return_value=data;
+                      	  Result=return_value.split(",");
+                      	  for(i=0;i<Result.length;)
+                      	  {
+                      		  if(Result[i]==""||Result[i+1]=="")
+                      		  {
+                      			  break;
+                      		  }
+                    		  table+="<tr>";
+                    		  table+="<td id='word'>"+Result[i+1]+"</td>";
+                    	       table+="<td id='word'>"+Result[i]+"</td>";
+                    		  table+="</tr>";
+                    		  i=i+2;
+                    	  }
+                    	  table+="</table>";
+                    	//  alert(table);
+                    	  var divs=document.getElementById("Answer");
+                    	  divs.innerHTML=table;
+                    },
+                error: function () {
+                    alert("error!")
+                },
+                dataType: "text"
+            })
+
+        }
+    </script>
+    <script type="text/javascript" src="http://api.map.baidu.com/api?v=1.2"></script>
+    <!--加载鼠标绘制工具-->
+    <script type="text/javascript"
+            src="http://api.map.baidu.com/library/DrawingManager/1.4/src/DrawingManager_min.js"></script>
+    <link rel="stylesheet" href="http://api.map.baidu.com/library/DrawingManager/1.4/src/DrawingManager_min.css"/>
+    <title>地理信息资源查询</title>
+</head>
+<body>
+<div id="title">
+    <img id="name" src="4.jpg"></img>
+</div>
+<div class="p20">
+    <div class="mt40">
+        <div id="txt">
+            <h3>时间区间</h3>
+        </div>
+        <div class="c-datepicker-date-editor J-datepicker-range-day mt10">
+            <input placeholder="开始日期" id="start" name="" class="c-datepicker-data-input only-date" value="">
+            <input placeholder="结束日期" id="end" name="" class="c-datepicker-data-input only-date" value="">
+        </div>
+    </div>
+    <div id="txt">
+        <h3>空间范围</h3>
+    </div>
+</div>
+<div id="allmap" style="margin-left:120px;overflow:hidden;zoom:1;position:relative;"></div>
+<div class="p20">
+    <div>
+        <div id="result">
+            <span id="span_name"></span>
+            <button id="size" type="button" onclick="send_message1()">查找</button>
+        </div>
+        <span id="span"></span>
+    </div>
+</div>
+<div id="input_url">
+    <input type="text" class="c-datepicker-date-editor" id="url" name="concent" placeholder="如果您想提交您的可用URL，请输入" value=""></input>
+    <input type="submit" id="define" value="确定" onclick="postComment()"></input>
+</div>
+<div id="Answer">
+</div>
+<div id="background">
+    <img src="t1.jpg" id="back_picture">
+</div>
+<script src="js/jquery.min.js"></script>
+<script src="js/plugins/moment.min.js"></script>
+<script src="js/datepicker.all.js"></script>
+<script type="text/javascript">
+
+    // 百度地图API功能
+    var a = ' ';
+    var result;
+    document.getElementById("span_name").innerHTML = a;
+    var map = new BMap.Map("allmap", {minZoom: 3, maxZoom: 17});
+    var poi = new BMap.Point(110, 40);
+    map.centerAndZoom(poi, 3);
+    var top_LEFT_navigation = new BMap.NavigationControl({
+        anchor: BMAP_ANCHOR_TOP_LEFT,
+        type: BMAP_NAVIGATION_CONTROL_ZOOM
+    });
+
+    function add_control() {
+        map.addControl(top_LEFT_navigation);
+    }
+
+    add_control();
+    //回调获得覆盖物信息
+    var overlays = [];
+    map.clearOverlays();
+    var node1;
+    var overlaycomplete = function (e) {
+        var pps = e.overlay.getPath();
+        if (pps[1].lng - pps[3].lng > 0.00000001 || pps[1].lng - pps[3].lng < -0.00000001) {
+            remove();
+            overlays.push(e.overlay);
+            e.overlay.type = 'draw';
+            result = "";
+            if (e.drawingMode == BMAP_DRAWING_RECTANGLE) {
+                if (pps[3].lat >= pps[1].lat) {
+                    var lat_max = (pps[3].lat).toFixed(3)
+                    var lat_min = (pps[1].lat).toFixed(3);
+                } else {
+                    var lat_min = (pps[3].lat).toFixed(3);
+                    var lat_max = (pps[1].lat).toFixed(3);
+                }
+                if (pps[3].lng >= pps[1].lng) {
+                    var lng_max = (pps[3].lng).toFixed(3);
+                    var lng_min = (pps[1].lng).toFixed(3);
+                } else {
+                    var lng_min = (pps[3].lng).toFixed(3);
+                    var lng_max = (pps[1].lng).toFixed(3);
+                }
+                result += lat_min + 'N' + '~' + lat_max + 'N' + ',' + lng_min + 'E' + '~' + lng_max + 'E';
+                document.getElementById("span_name").innerHTML = result;
+            }
+        }
+    };
+    //画出矩形样式
+    var styleOptions = {
+        strokeColor: "black",    //边线颜色。
+        fillColor: "",      //填充颜色。当参数为空时，圆形将没有填充效果。
+        strokeWeight: 2,       //边线的宽度，以像素为单位。
+        strokeOpacity: 1,	   //边线透明度，取值范围0 - 1。
+        fillOpacity: 0,      //填充的透明度，取值范围0 - 1。
+        strokeStyle: 'dashed' //边线的样式，solid或dashed。
+    };
+
+    //实例化鼠标绘制工具
+    var drawingManager = new BMapLib.DrawingManager(map, {
+        isOpen: false, //是否开启绘制模式
+        enableDrawingTool: true,//是否显示工具栏
+        drawingToolOptions: {
+            anchor: BMAP_ANCHOR_TOP_RIGHT, //位置
+            offset: new BMap.Size(-40, 0), //偏离值
+            scale: 0.4,
+            drawingModes: [BMAP_DRAWING_RECTANGLE],//工具栏缩放比例
+        },
+        rectangleOptions: styleOptions //矩形的样式
+    });
+    drawingManager.addEventListener('overlaycomplete', overlaycomplete);
+
+    function remove() {
+        var overLayers = map.getOverlays();
+        console.log(overLayers)
+        for (var item in overLayers) {
+            if (item.type == 'draw') {
+                map.removeOverlay(item);
+            }
+        }
+    }
+
+    function send_message2() {
+        var value1 = document.getElementById("url").value;
+    }
+
+    $(function () {
+        var DATAPICKERAPI = {
+            shortcutMonth: function () {
+                var time;
+                var nowDay = moment().get('date');
+                var prevMonthFirstDay = moment().subtract(1, 'months').set({'date': 1});
+                var prevMonthDay = moment().diff(prevMonthFirstDay, 'days');
+                return {
+                    now: '-' + nowDay + ',0',
+                    prev: '-' + prevMonthDay + ',-' + nowDay
+                }
+            }
+        };
+        //年月日范围
+        $('.J-datepicker-range-day').datePicker({
+            hasShortcut: true,
+            format: 'YYYY-MM-DD',
+            isRange: true,
+            shortcutOptions: DATAPICKERAPI.rangeShortcutOption1
+        });
+    });
+    function postComment() {
+        if ($("input[name='concent']").val()) {
+            var str = $("input[name='concent']").val();
+            document.getElementById("span_name").innerHTML = str;
+            var strRegex = "^((https|http|ftp|rtsp|mms)?://)"
+            	+ "?(([0-9a-z_!~*'().&=+$%-]+: )?[0-9a-z_!~*'().&=+$%-]+@)?" // ftp的user@
+            	+ "(([0-9]{1,3}\.){3}[0-9]{1,3}" // IP形式的URL- 199.194.52.184
+            	+ "|" // 允许IP和DOMAIN（域名）
+            	+ "([0-9a-z_!~*'()-]+\.)*" // 域名- www.
+            	+ "([0-9a-z][0-9a-z-]{0,61})?[0-9a-z]\." // 二级域名
+            	+ "[a-z]{2,6})" // first level domain- .com or .museum
+            	+ "(:[0-9]{1,4})?" // 端口- :80
+            	+ "((/?)|" // a slash isn't required if there is no file name
+            	+ "(/[0-9a-z_!~*'().;?:@&=+$,%#-]+)+/?)$";
+            	var re = new RegExp(strRegex);
+            if (re.test(str) != true) {
+
+                alert("网址格式不正确");
+                return false;
+            } else {
+                alert("提交成功！");
+            }
+
+        }
+    }
+
+</script>
+</body>
+</html>
